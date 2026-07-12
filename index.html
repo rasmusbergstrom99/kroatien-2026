@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0E7FA8">
+<title>Kroatien 2026 ⛵️ · Crewets seglingsvecka</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,600&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --adria:#0E7FA8;      /* hamn / hav */
+    --adria-djup:#0B4D6B;
+    --teal:#1FB6A6;       /* svaj */
+    --sol:#F4A62A;        /* start / sol */
+    --sol-ljus:#FFD46B;
+    --korall:#E4572E;     /* via / accent */
+    --sand:#FBEFD6;
+    --sand-djup:#F6E3BE;
+    --blek:#FFF9EF;
+    --blackish:#20303a;
+    --skugga:0 8px 24px rgba(11,77,107,.14);
+    --skugga-mjuk:0 3px 10px rgba(11,77,107,.10);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:'Nunito',system-ui,sans-serif;
+    color:var(--blackish);
+    background:
+      radial-gradient(120% 60% at 100% 0%, #BFE9F5 0%, rgba(191,233,245,0) 55%),
+      linear-gradient(180deg, #EAF7FB 0%, var(--blek) 30%);
+    -webkit-text-size-adjust:100%;
+  }
+
+  /* ---------- Header ---------- */
+  header.topbar{
+    position:sticky; top:0; z-index:1000;
+    background:linear-gradient(120deg, var(--adria) 0%, var(--adria-djup) 100%);
+    color:#fff; padding:14px 16px calc(14px + env(safe-area-inset-top)) 16px;
+    padding-top:calc(14px + env(safe-area-inset-top));
+    box-shadow:var(--skugga);
+    border-bottom-left-radius:22px; border-bottom-right-radius:22px;
+    overflow:hidden;
+  }
+  header.topbar::after{ /* liten sol-touch */
+    content:"☀️"; position:absolute; right:14px; top:8px; font-size:38px;
+    filter:drop-shadow(0 2px 6px rgba(0,0,0,.15)); opacity:.9;
+  }
+  .titel{ font-family:'Fredoka',sans-serif; font-weight:700; font-size:26px; line-height:1.05; letter-spacing:.2px; margin:0; }
+  .undertitel{ font-size:13.5px; opacity:.92; margin-top:3px; font-weight:600; }
+  .metarad{ display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+  .metachip{
+    background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.28);
+    padding:3px 10px; border-radius:999px; font-size:12px; font-weight:700;
+    backdrop-filter:blur(2px);
+  }
+  .crewrad{ font-size:12px; opacity:.9; margin-top:8px; font-weight:600; }
+
+  /* ---------- Karta ---------- */
+  #map{ height:46vh; min-height:300px; width:100%; z-index:1; }
+  .leaflet-container{ background:#BFE9F5; font-family:'Nunito',sans-serif; }
+  .leaflet-popup-content-wrapper{ border-radius:14px; box-shadow:var(--skugga); }
+  .leaflet-popup-content{ margin:11px 14px; font-weight:600; }
+  .pop-dag{ font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.4px; color:var(--adria); }
+  .pop-namn{ font-family:'Fredoka',sans-serif; font-weight:600; font-size:16px; line-height:1.1; margin:2px 0 1px; }
+  .pop-region{ font-size:12px; color:#607781; }
+
+  /* pins */
+  .pin{
+    display:flex; align-items:center; justify-content:center;
+    width:38px; height:38px; border-radius:50% 50% 50% 8px;
+    transform:rotate(45deg);
+    color:#fff; font-weight:800; font-size:15px;
+    border:2.5px solid #fff; box-shadow:0 4px 10px rgba(11,77,107,.35);
+  }
+  .pin span{ transform:rotate(-45deg); font-family:'Fredoka',sans-serif; }
+  .pin.hamn{ background:var(--adria); }
+  .pin.svaj{ background:var(--teal); }
+  .pin.start{ background:var(--sol); color:#5a3d00; }
+  .pin.via{ width:28px;height:28px;font-size:13px; background:var(--korall); border-radius:50%; transform:none; box-shadow:0 3px 7px rgba(228,87,46,.4);}
+  .pin.via span{ transform:none; }
+  .pin.aktiv{ animation:studs .6s ease; outline:3px solid var(--sol-ljus); outline-offset:2px; }
+  @keyframes studs{ 0%{transform:rotate(45deg) scale(1)}50%{transform:rotate(45deg) scale(1.28)}100%{transform:rotate(45deg) scale(1)} }
+  .boat{ font-size:26px; filter:drop-shadow(0 3px 4px rgba(0,0,0,.28)); animation:gunga 2.6s ease-in-out infinite; }
+  @keyframes gunga{ 0%,100%{transform:rotate(-6deg) translateY(0)}50%{transform:rotate(6deg) translateY(-3px)} }
+
+  .kartknapp{
+    position:absolute; z-index:600; right:10px; bottom:14px;
+    background:#fff; color:var(--adria-djup); border:none; border-radius:999px;
+    padding:8px 13px; font-size:12.5px; font-weight:800; font-family:'Nunito',sans-serif;
+    box-shadow:var(--skugga); cursor:pointer;
+  }
+  .kartknapp.pa{ background:var(--adria); color:#fff; }
+
+  /* ---------- Itinerary ---------- */
+  main{ max-width:640px; margin:0 auto; padding:16px 14px 40px; }
+  .sektionrubrik{
+    font-family:'Fredoka',sans-serif; font-weight:600; font-size:15px;
+    color:var(--adria-djup); margin:4px 4px 12px; display:flex; align-items:center; gap:7px;
+  }
+  .kort{
+    background:#fff; border-radius:20px; box-shadow:var(--skugga-mjuk);
+    margin-bottom:14px; overflow:hidden; border:1.5px solid #fff;
+    transition:transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+  }
+  .kort.aktiv{ border-color:var(--sol-ljus); box-shadow:var(--skugga); }
+  .kort-huvud{ display:flex; gap:12px; align-items:flex-start; padding:14px 15px; cursor:pointer; }
+  .dagbadge{
+    flex:0 0 auto; width:44px; height:44px; border-radius:14px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    color:#fff; font-family:'Fredoka',sans-serif; line-height:1;
+    box-shadow:var(--skugga-mjuk);
+  }
+  .dagbadge .d{ font-size:9px; font-weight:600; opacity:.9; letter-spacing:.5px; }
+  .dagbadge .n{ font-size:20px; font-weight:700; }
+  .dagbadge.hamn{ background:linear-gradient(135deg,var(--adria),var(--adria-djup)); }
+  .dagbadge.svaj{ background:linear-gradient(135deg,var(--teal),#0E8f82); }
+  .dagbadge.start{ background:linear-gradient(135deg,var(--sol),#e08f12); color:#4a3200; }
+  .kort-titelrad{ flex:1 1 auto; min-width:0; }
+  .veckodatum{ font-size:11.5px; font-weight:800; color:var(--korall); text-transform:uppercase; letter-spacing:.5px; }
+  .platsnamn{ font-family:'Fredoka',sans-serif; font-weight:600; font-size:18.5px; line-height:1.1; margin:1px 0; }
+  .region{ font-size:12.5px; color:#78909a; font-weight:600; }
+  .oneliner{ font-size:13.5px; margin-top:7px; font-weight:600; color:#3d5560; font-style:italic; }
+  .chiprad{ display:flex; flex-wrap:wrap; gap:6px; margin-top:9px; }
+  .chip{ font-size:11.5px; font-weight:800; padding:3px 9px; border-radius:999px; white-space:nowrap; }
+  .chip.segl{ background:#E4F3F8; color:var(--adria); }
+  .chip.natt{ background:#E7F7F3; color:#0E8f82; }
+  .chip.natt.hamn{ background:#E4F3F8; color:var(--adria); }
+  .chip.natt.start{ background:#FCEFD2; color:#a06a00; }
+  .chip.ingen{ background:#FCEFD2; color:#a06a00; }
+  .pil{ flex:0 0 auto; color:#b7c6cd; font-size:20px; transition:transform .2s ease; align-self:center; }
+  .kort.oppen .pil{ transform:rotate(90deg); color:var(--adria); }
+
+  .kort-detalj{ display:none; padding:0 15px 15px; }
+  .kort.oppen .kort-detalj{ display:block; animation:fadein .18s ease; }
+  @keyframes fadein{ from{opacity:0; transform:translateY(-4px)} to{opacity:1; transform:none} }
+  .block{ border-top:1px dashed #e5e0d2; padding-top:11px; margin-top:11px; }
+  .block h4{ margin:0 0 5px; font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:.4px; color:var(--adria-djup); display:flex; align-items:center; gap:6px; }
+  .block p{ margin:0; font-size:13.5px; line-height:1.5; font-weight:600; color:#3a4c54; }
+  .vindskydd{ display:inline-block; margin-top:6px; font-size:12px; font-weight:800; color:#0E8f82; background:#E7F7F3; padding:2px 9px; border-radius:999px; }
+  ul.lista{ margin:4px 0 0; padding-left:18px; }
+  ul.lista li{ font-size:13.5px; line-height:1.5; font-weight:600; color:#3a4c54; margin-bottom:2px; }
+
+  footer{ text-align:center; padding:14px 20px 30px; color:#8aa0a9; font-size:12px; font-weight:700; }
+  footer .liten{ display:block; margin-top:5px; font-weight:600; opacity:.8; font-size:11px; }
+
+  @media(min-width:760px){
+    #map{ height:52vh; }
+    .titel{ font-size:30px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <h1 class="titel" id="h-titel">Kroatien 2026 ⛵️</h1>
+  <div class="undertitel" id="h-undertitel"></div>
+  <div class="metarad" id="h-meta"></div>
+  <div class="crewrad" id="h-crew"></div>
+</header>
+
+<div style="position:relative">
+  <div id="map"></div>
+  <button class="kartknapp" id="sjokort-knapp">🧭 Sjökort</button>
+</div>
+
+<main>
+  <div class="sektionrubrik">🗓️ Veckan, dag för dag <span style="font-weight:600;font-size:12px;color:#8aa0a9">(tryck på ett dygn)</span></div>
+  <div id="itinerary"></div>
+  <footer>
+    Ha en grym vecka, gänget! ☀️⚓️🍺
+    <span class="liten">Informationskarta — inte för navigation. Distanser/tider är ungefärliga.</span>
+  </footer>
+</main>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="route.js"></script>
+<script>
+/* ---------- Hjälpare ---------- */
+function haversineNm(a,b){
+  const R=6371, rad=x=>x*Math.PI/180;
+  const dLat=rad(b[0]-a[0]), dLng=rad(b[1]-a[1]);
+  const s=Math.sin(dLat/2)**2 + Math.cos(rad(a[0]))*Math.cos(rad(b[0]))*Math.sin(dLng/2)**2;
+  const km=R*2*Math.atan2(Math.sqrt(s),Math.sqrt(1-s));
+  return km/1.852;
+}
+function nummer1(x){ return x.toFixed(1).replace('.',','); }
+
+/* distans för ett seglingsben (genom ev. via-punkt) */
+function etappNm(stopp, i){
+  const s = stopp[i];
+  if(!s.seglas) return 0;
+  const from = stopp[i-1].coords;
+  let nm = 0, prev = from;
+  if(s.via){ nm += haversineNm(prev, s.via.coords); prev = s.via.coords; }
+  nm += haversineNm(prev, s.coords);
+  return nm;
+}
+
+/* ---------- Header ---------- */
+document.getElementById('h-titel').textContent = TRIP.titel;
+document.getElementById('h-undertitel').textContent = TRIP.undertitel;
+document.getElementById('h-meta').innerHTML =
+  `<span class="metachip">📅 ${TRIP.datumspann}</span>` +
+  `<span class="metachip">⛵️ ${TRIP.stopp.filter(s=>s.seglas).length} seglingar</span>` +
+  `<span class="metachip">🏝️ ${TRIP.stopp.length-1} dygn</span>`;
+document.getElementById('h-crew').textContent = '👥 ' + TRIP.crew.join(' · ');
+
+/* ---------- Karta ---------- */
+const map = L.map('map', { zoomControl:true, scrollWheelZoom:true });
+const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+  maxZoom:19, attribution:'© OpenStreetMap'
+}).addTo(map);
+const seamark = L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png',{
+  maxZoom:18, opacity:.9, attribution:'© OpenSeaMap'
+});
+let sjokortPa=false;
+document.getElementById('sjokort-knapp').addEventListener('click', function(){
+  sjokortPa=!sjokortPa;
+  if(sjokortPa){ seamark.addTo(map); this.classList.add('pa'); }
+  else{ map.removeLayer(seamark); this.classList.remove('pa'); }
+});
+
+const EMOJI = { start:'🏁', hamn:'⚓️', svaj:'🏝️' };
+
+/* markörer — dedupe på (nästan) samma koordinat, så Split (dag 1 & 9) och Vis (dag 4 & 5) delar markör */
+const stopp = TRIP.stopp;
+const markerByDay = {};
+const platser = [];
+function sammaPlats(a,b){ return Math.abs(a[0]-b[0])<0.002 && Math.abs(a[1]-b[1])<0.002; }
+
+stopp.forEach(s=>{
+  let plats = platser.find(p=> sammaPlats(p.coords, s.coords));
+  if(!plats){
+    const icon = L.divIcon({ className:'', iconSize:[38,38], iconAnchor:[19,36], popupAnchor:[0,-34],
+      html:`<div class="pin ${s.typ}"><span>${EMOJI[s.typ]||'⚓️'}</span></div>` });
+    const m = L.marker(s.coords, {icon}).addTo(map);
+    plats = { coords:s.coords, marker:m, dagar:[] };
+    platser.push(plats);
+  }
+  plats.dagar.push(s);
+  markerByDay[s.dag] = plats.marker;
+});
+/* popups (efter att alla dagar knutits till platsen) */
+platser.forEach(p=>{
+  const d = p.dagar;
+  const dagtext = d.length>1 ? `Dag ${d[0].dag} & ${d[d.length-1].dag}` : `Dag ${d[0].dag} · ${d[0].veckodag} ${d[0].datum}`;
+  const namn = d[0].namn === 'Vis Town' || d[0].namn.startsWith('Vis') ? 'Vis' : d[0].namn;
+  p.marker.bindPopup(
+    `<div class="pop-dag">${dagtext}</div>`+
+    `<div class="pop-namn">${namn}</div>`+
+    `<div class="pop-region">${d[0].region}</div>`, {closeButton:true});
+});
+
+/* via-punkter (badstopp) som egna små markörer */
+stopp.forEach(s=>{
+  if(s.via){
+    const icon = L.divIcon({ className:'', iconSize:[28,28], iconAnchor:[14,14], popupAnchor:[0,-14],
+      html:`<div class="pin via"><span>🏊</span></div>` });
+    L.marker(s.via.coords,{icon}).addTo(map)
+      .bindPopup(`<div class="pop-dag">Dag ${s.dag} · badstopp</div><div class="pop-namn">${s.via.namn.replace(' (lunchbad)','')}</div>`);
+  }
+});
+
+/* rutt-linje (segling) + streckad hemresa */
+const seglingsPunkter=[];
+let hemresaLinje=null;
+stopp.forEach((s,i)=>{
+  if(i===0){ seglingsPunkter.push(s.coords); return; }
+  if(s.transfer){
+    hemresaLinje = [ stopp[i-1].coords, s.coords ];
+    return;
+  }
+  if(s.seglas){
+    if(s.via) seglingsPunkter.push(s.via.coords);
+    seglingsPunkter.push(s.coords);
+  }
+});
+L.polyline(seglingsPunkter, { color:'#0E7FA8', weight:4, opacity:.9, dashArray:'1 10', lineCap:'round' }).addTo(map);
+L.polyline(seglingsPunkter, { color:'#0E7FA8', weight:4, opacity:.35, lineCap:'round' }).addTo(map);
+if(hemresaLinje){
+  L.polyline(hemresaLinje, { color:'#E4572E', weight:3, opacity:.7, dashArray:'6 8' }).addTo(map)
+   .bindPopup('<div class="pop-dag">Dag 9</div><div class="pop-namn">Hemresa 🚢</div><div class="pop-region">Färja Stari Grad → Split</div>');
+}
+
+/* liten båt som "seglar" till valt stopp */
+const boatIcon = L.divIcon({ className:'', iconSize:[30,30], iconAnchor:[15,15], html:'<div class="boat">⛵️</div>' });
+const boat = L.marker(stopp[0].coords, {icon:boatIcon, zIndexOffset:1000, interactive:false}).addTo(map);
+
+/* passa in hela rutten */
+map.fitBounds(L.latLngBounds(stopp.map(s=>s.coords)).pad(0.18));
+
+/* ---------- Itinerary ---------- */
+const NATT = {
+  hamn:  {klass:'hamn',  txt:'🏨 Hamn'},
+  svaj:  {klass:'svaj',  txt:'🏝️ Svaj'},
+  start: {klass:'start', txt:'🛏️ Övernattning'}
+};
+const wrap = document.getElementById('itinerary');
+let aktivtKort=null;
+
+stopp.forEach((s,i)=>{
+  const nm = etappNm(stopp,i);
+  const kort = document.createElement('article');
+  kort.className='kort';
+  kort.id='dag-'+s.dag;
+
+  // segling-chip
+  let seglChip='';
+  if(s.transfer) seglChip=`<span class="chip ingen">🚢 Hemresa · färja + flyg</span>`;
+  else if(!s.seglas && s.dag===1) seglChip=`<span class="chip ingen">🛬 Ankomstdag</span>`;
+  else if(!s.seglas) seglChip=`<span class="chip ingen">🛵 Ingen segling</span>`;
+  else seglChip=`<span class="chip segl">⛵️ ~${Math.round(nm)} M · ~${nummer1(nm/TRIP.fart)} h</span>`;
+
+  const natt = NATT[s.typ] || NATT.svaj;
+  let nattTxt = natt.txt;
+  if(s.transfer) nattTxt='✈️ Avresa';
+
+  const matLista = (s.sevart.mat||[]).map(x=>`<li>${x}</li>`).join('');
+  const seLista  = (s.sevart.se||[]).map(x=>`<li>${x}</li>`).join('');
+
+  kort.innerHTML = `
+    <div class="kort-huvud">
+      <div class="dagbadge ${s.typ}"><span class="d">DAG</span><span class="n">${s.dag}</span></div>
+      <div class="kort-titelrad">
+        <div class="veckodatum">${s.veckodag} ${s.datum}</div>
+        <div class="platsnamn">${s.namn}</div>
+        <div class="region">${s.region}</div>
+        <div class="oneliner">${s.oneliner}</div>
+        <div class="chiprad">${seglChip}<span class="chip natt ${natt.klass}">${nattTxt}</span></div>
+      </div>
+      <div class="pil">›</div>
+    </div>
+    <div class="kort-detalj">
+      <div class="block">
+        <h4>${s.typ==='svaj'?'🏝️ Ankring / svaj':'⚓️ Hamn'}</h4>
+        <p>${s.hamn.text}</p>
+        ${s.hamn.vindskydd?`<span class="vindskydd">🌬️ ${s.hamn.vindskydd}</span>`:''}
+      </div>
+      ${(matLista||seLista)?`<div class="block">
+        <h4>🍽️ Sevärt &amp; mat</h4>
+        ${matLista?`<ul class="lista">${matLista}</ul>`:''}
+        ${seLista?`<ul class="lista">${seLista}</ul>`:''}
+      </div>`:''}
+      <div class="block">
+        <h4>🧭 Praktiskt</h4>
+        <p>${s.praktiskt}</p>
+      </div>
+    </div>`;
+
+  const huvud = kort.querySelector('.kort-huvud');
+  huvud.addEventListener('click', ()=>{
+    const redanOppen = kort.classList.contains('oppen');
+    // stäng övriga
+    document.querySelectorAll('.kort.oppen').forEach(k=>{ if(k!==kort) k.classList.remove('oppen'); });
+    kort.classList.toggle('oppen', !redanOppen);
+
+    // markera + flyg dit
+    if(aktivtKort) aktivtKort.classList.remove('aktiv');
+    kort.classList.add('aktiv'); aktivtKort=kort;
+
+    const m = markerByDay[s.dag];
+    map.flyTo(s.coords, 12, {duration:.7});
+    boat.setLatLng(s.coords);
+    setTimeout(()=>{ if(m) m.openPopup(); }, 720);
+
+    // studsa pinnen
+    const el = m && m.getElement && m.getElement();
+    const pin = el && el.querySelector('.pin');
+    if(pin){ pin.classList.remove('aktiv'); void pin.offsetWidth; pin.classList.add('aktiv'); }
+
+    // se till att kartan syns när man öppnar ett kort
+    document.getElementById('map').scrollIntoView({behavior:'smooth', block:'start'});
+  });
+
+  wrap.appendChild(kort);
+});
+</script>
+</body>
+</html>
