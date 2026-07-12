@@ -45,6 +45,7 @@ const TRIP = {
       coords: [43.3268, 16.4483],
       typ: "hamn",
       seglas: true,
+      rutt: [ {c:[43.345, 16.415]} ], // väster om Brač NV-udden, in i Milnas vik från SV
       oneliner: "Kort mjukstart: kasta loss ~15:00, marinmiddag och Brač-solnedgång. 🌅",
       hamn: {
         text: "ACI Marina Milna (~170 platser) — en av Brač säkraste och mest skyddade hamnar. Vatten, el, dusch och bränsle på plats.",
@@ -65,6 +66,7 @@ const TRIP = {
       coords: [43.3709, 16.2885],
       typ: "svaj",
       seglas: true,
+      rutt: [ {c:[43.343, 16.372]}, {c:[43.351, 16.318]} ], // runt södra Šolta
       oneliner: "Första svaj-natten i en turkos vik — hoppa i direkt från båten. 🏝️",
       hamn: {
         text: "Naturvik på södra Šolta. Bojar via restaurang Lonely Paradise (~€20/dygn). Viken delar sig i tre smala armar (djup 5–10 m) — landförtöjning rekommenderas utöver ankare.",
@@ -123,9 +125,9 @@ const TRIP = {
       namn: "Uvala Gradina",
       region: "Korčula",
       coords: [42.9690, 16.6920],
-      via: { namn: "Proizd (lunchbad)", coords: [42.9660, 16.6470] },
       typ: "svaj",
       seglas: true,
+      rutt: [ {c:[42.9660, 16.6470], badstopp:"Proizd (lunchbad)"}, {c:[42.9585, 16.6790]} ], // badstopp + runt Sveti Ivan in i viken
       oneliner: "Dubbelstopp: lunchbad vid drömstranden Proizd, sen svaj i lugna Gradina. 🐚",
       hamn: {
         text: "Svaj i Uvala Gradina, norr om Vela Luka-bukten vid Sveti Ivan. Grund, sandig och lugn vik med glasklart vatten. Bojar via restaurang Siloko (dalmatiskt — fisk & lamm, terrass över viken).",
@@ -146,6 +148,7 @@ const TRIP = {
       coords: [43.1615, 16.3925],
       typ: "svaj",
       seglas: true,
+      rutt: [ {c:[43.020, 16.520]} ], // öppet vatten i Hvar-kanalen, söder om Šćedro
       oneliner: "Sista svaj-kvällen: Meneghello-middag och botanisk trädgård. En sväng till Hvar-stan? 🌴",
       hamn: {
         text: "Vinogradišće-viken på Sv. Klement (Pakleni). Ankra/boj i viken, eller ACI Marina Palmižana (~211 platser) intill. Känd botanisk trädgård planterad av Meneghello-familjen.",
@@ -166,6 +169,7 @@ const TRIP = {
       coords: [43.1847, 16.5966],
       typ: "hamn",
       seglas: true,
+      rutt: [ {c:[43.208, 16.360]}, {c:[43.212, 16.520]}, {c:[43.185, 16.590]} ], // runt västra Hvar (Pelegrin), in i Stari Grad-viken
       oneliner: "Sista natten i en 2400 år gammal hamn — lugn Riva, en sista peka, packning. ⚓",
       hamn: {
         text: "Stari Grad ligger djupt i en lång vik — en av Kroatiens säkraste naturhamnar. Marina Stari Grad tar upp till ~150 båtar, kajdjup 4–5 m.",
@@ -187,6 +191,7 @@ const TRIP = {
       typ: "start",
       seglas: false,
       transfer: true,
+      rutt: [ {c:[43.185, 16.590]}, {c:[43.290, 16.455]}, {c:[43.400, 16.395]} ], // färjeled ut ur viken, väster om Brač genom Splitska vrata upp mot Split
       oneliner: "Färja 14:00, flyg 19:30. Sov gott, bra crew — samma tid nästa år? ✈️",
       hamn: {
         text: "Lämna båten i Stari Grad på morgonen. Färja Stari Grad → Split 14:00–15:50, sedan flyg Split → Stockholm 19:30.",

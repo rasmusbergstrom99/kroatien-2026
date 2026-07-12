@@ -149,9 +149,33 @@
   footer{ text-align:center; padding:14px 20px 30px; color:#8aa0a9; font-size:12px; font-weight:700; }
   footer .liten{ display:block; margin-top:5px; font-weight:600; opacity:.8; font-size:11px; }
 
+  /* ---------- Kapten Emily ---------- */
+  .kaptenkort{
+    display:flex; align-items:flex-end; gap:8px;
+    background:linear-gradient(135deg,#ffffff 0%, var(--sand) 100%);
+    border-radius:22px; box-shadow:var(--skugga-mjuk); border:1.5px solid #fff;
+    padding:10px 14px 0 10px; margin-bottom:18px; position:relative;
+  }
+  .kaptenbild{
+    height:158px; width:auto; flex:0 0 auto; align-self:flex-end; margin-bottom:-1px;
+    filter:drop-shadow(0 7px 10px rgba(11,77,107,.20));
+  }
+  .pratbubbla{
+    position:relative; background:var(--adria); color:#fff;
+    border-radius:16px; padding:11px 14px; margin:14px 0 18px;
+    font-weight:600; font-size:13.5px; line-height:1.46; box-shadow:var(--skugga-mjuk);
+  }
+  .pratbubbla::after{
+    content:''; position:absolute; left:-8px; bottom:18px;
+    border:8px solid transparent; border-right-color:var(--adria); border-left:0;
+  }
+  .pb-namn{ font-family:'Fredoka',sans-serif; font-weight:600; font-size:15px; margin-bottom:2px; letter-spacing:.2px; }
+  .pratbubbla p{ margin:0; }
+
   @media(min-width:760px){
     #map{ height:52vh; }
     .titel{ font-size:30px; }
+    .kaptenbild{ height:190px; }
   }
 </style>
 </head>
@@ -170,6 +194,13 @@
 </div>
 
 <main>
+  <div class="kaptenkort">
+    <img class="kaptenbild" src="emily.png" alt="Kapten Emily" width="263" height="640">
+    <div class="pratbubbla">
+      <div class="pb-namn">Kapten Emily <span>🧭</span></div>
+      <p>Ahoj, crew! Jag är Emily, er skeppare. Här är veckans plan — tryck runt på dygnen och häng med. Vi ses ombord! ⚓️☀️</p>
+    </div>
+  </div>
   <div class="sektionrubrik">🗓️ Veckan, dag för dag <span style="font-weight:600;font-size:12px;color:#8aa0a9">(tryck på ett dygn)</span></div>
   <div id="itinerary"></div>
   <footer>
@@ -191,14 +222,20 @@ function haversineNm(a,b){
 }
 function nummer1(x){ return x.toFixed(1).replace('.',','); }
 
-/* distans för ett seglingsben (genom ev. via-punkt) */
-function etappNm(stopp, i){
+/* hela ett segelbens punktlista: förra stoppet → ev. rutt-waypoints → detta stopp */
+function benPunkter(stopp, i){
   const s = stopp[i];
-  if(!s.seglas) return 0;
-  const from = stopp[i-1].coords;
-  let nm = 0, prev = from;
-  if(s.via){ nm += haversineNm(prev, s.via.coords); prev = s.via.coords; }
-  nm += haversineNm(prev, s.coords);
+  const pts = [ stopp[i-1].coords ];
+  if(s.rutt) s.rutt.forEach(w => pts.push(w.c));
+  pts.push(s.coords);
+  return pts;
+}
+/* distans för ett seglingsben (summerat längs den ritade rutten) */
+function etappNm(stopp, i){
+  if(!stopp[i].seglas) return 0;
+  const pts = benPunkter(stopp, i);
+  let nm = 0;
+  for(let k=1;k<pts.length;k++) nm += haversineNm(pts[k-1], pts[k]);
   return nm;
 }
 
@@ -257,27 +294,28 @@ platser.forEach(p=>{
     `<div class="pop-region">${d[0].region}</div>`, {closeButton:true});
 });
 
-/* via-punkter (badstopp) som egna små markörer */
+/* badstopp längs rutten (rutt-waypoints med .badstopp) som egna små markörer */
 stopp.forEach(s=>{
-  if(s.via){
+  (s.rutt||[]).forEach(w=>{
+    if(!w.badstopp) return;
     const icon = L.divIcon({ className:'', iconSize:[28,28], iconAnchor:[14,14], popupAnchor:[0,-14],
       html:`<div class="pin via"><span>🏊</span></div>` });
-    L.marker(s.via.coords,{icon}).addTo(map)
-      .bindPopup(`<div class="pop-dag">Dag ${s.dag} · badstopp</div><div class="pop-namn">${s.via.namn.replace(' (lunchbad)','')}</div>`);
-  }
+    L.marker(w.c,{icon}).addTo(map)
+      .bindPopup(`<div class="pop-dag">Dag ${s.dag} · badstopp</div><div class="pop-namn">${w.badstopp.replace(' (lunchbad)','')}</div>`);
+  });
 });
 
-/* rutt-linje (segling) + streckad hemresa */
+/* rutt-linje (segling, genom waypoints runt öarna) + streckad hemresa */
 const seglingsPunkter=[];
 let hemresaLinje=null;
 stopp.forEach((s,i)=>{
   if(i===0){ seglingsPunkter.push(s.coords); return; }
   if(s.transfer){
-    hemresaLinje = [ stopp[i-1].coords, s.coords ];
+    hemresaLinje = [ stopp[i-1].coords, ...(s.rutt||[]).map(w=>w.c), s.coords ];
     return;
   }
   if(s.seglas){
-    if(s.via) seglingsPunkter.push(s.via.coords);
+    (s.rutt||[]).forEach(w=> seglingsPunkter.push(w.c));
     seglingsPunkter.push(s.coords);
   }
 });
