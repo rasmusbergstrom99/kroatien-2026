@@ -31,8 +31,7 @@ const TRIP = {
         vindskydd: null
       },
       sevart: {
-        mat: ["Middag i Diocletianus gamla stan", "En första öl på Riva-promenaden"],
-        se: ["Diocletianus-palatset", "Marjan-backen om benen vill sträckas"]
+        mat: ["Hämtpizza till båten"],
       },
       praktiskt: "Storhandla proviant inför veckan (mataffär nära Riva/marinan). Två i crewet, Vilhelm & Signe, ansluter imorgon kl 13:00."
     },
@@ -52,7 +51,7 @@ const TRIP = {
         vindskydd: "Mycket skyddad hamn"
       },
       sevart: {
-        mat: ["VM-finalen på kvällen ⚽ — vi kollar upp en bar i Milna", "Konoba & Pizzeria Slika (vid marinan, kända solnedgångar)", "Gajeta Konoba (dalmatiskt vid vattnet)", "Restaurant Bago (fisk, utsikt en bit från centrum)"],
+        mat: ["VM-finalen på kvällen (21:00) ⚽ — vi kollar upp en bar i Milna", "Konoba & Pizzeria Slika (vid marinan, kända solnedgångar)", "Gajeta Konoba (dalmatiskt vid vattnet)", "Restaurant Bago (fisk, utsikt en bit från centrum)"],
         se: ["Slottet i Milnas gamla del", "Kvällspromenad längs den skyddade viken"]
       },
       praktiskt: "Vilhelm & Signe landar 13:00, ombord ~14:30/15:00 → loss mot Milna. Tanka/fyll vatten vid marinan inför svaj-dagarna."
