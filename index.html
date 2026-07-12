@@ -69,6 +69,7 @@
   .pop-dag{ font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.4px; color:var(--adria); }
   .pop-namn{ font-family:'Fredoka',sans-serif; font-weight:600; font-size:16px; line-height:1.1; margin:2px 0 1px; }
   .pop-region{ font-size:12px; color:#607781; }
+  .pop-etapp{ display:inline-block; margin-top:7px; margin-right:4px; font-size:12px; font-weight:800; color:var(--adria); background:#E4F3F8; padding:3px 9px; border-radius:10px; }
 
   /* pins */
   .pin{
@@ -185,7 +186,6 @@
   <h1 class="titel" id="h-titel">Kroatien 2026 ⛵️</h1>
   <div class="undertitel" id="h-undertitel"></div>
   <div class="metarad" id="h-meta"></div>
-  <div class="crewrad" id="h-crew"></div>
 </header>
 
 <div style="position:relative">
@@ -238,6 +238,16 @@ function etappNm(stopp, i){
   for(let k=1;k<pts.length;k++) nm += haversineNm(pts[k-1], pts[k]);
   return nm;
 }
+/* seglingstid, avrundad UPPÅT till hel timme */
+function segTimmar(nm){ return Math.ceil(nm / TRIP.fart); }
+/* kort etapp-text (distans + tid) för popup + kort */
+function etappText(s){
+  if(s.transfer) return '🚢 Hemresa · färja + flyg';
+  if(!s.seglas && s.dag === 1) return '🛬 Ankomstdag';
+  if(!s.seglas) return '🛵 Ingen segling';
+  const nm = etappNm(stopp, stopp.indexOf(s));
+  return `⛵️ ~${Math.round(nm)} M · ~${segTimmar(nm)} h`;
+}
 
 /* ---------- Header ---------- */
 document.getElementById('h-titel').textContent = TRIP.titel;
@@ -246,7 +256,6 @@ document.getElementById('h-meta').innerHTML =
   `<span class="metachip">📅 ${TRIP.datumspann}</span>` +
   `<span class="metachip">⛵️ ${TRIP.stopp.filter(s=>s.seglas).length} seglingar</span>` +
   `<span class="metachip">🏝️ ${TRIP.stopp.length-1} dygn</span>`;
-document.getElementById('h-crew').textContent = '👥 ' + TRIP.crew.join(' · ');
 
 /* ---------- Karta ---------- */
 const map = L.map('map', { zoomControl:true, scrollWheelZoom:true });
@@ -288,10 +297,13 @@ platser.forEach(p=>{
   const d = p.dagar;
   const dagtext = d.length>1 ? `Dag ${d[0].dag} & ${d[d.length-1].dag}` : `Dag ${d[0].dag} · ${d[0].veckodag} ${d[0].datum}`;
   const namn = d[0].namn === 'Vis Town' || d[0].namn.startsWith('Vis') ? 'Vis' : d[0].namn;
+  const etapprader = d.map(s =>
+    `<span class="pop-etapp">${d.length>1 ? `Dag ${s.dag}: ` : ''}${etappText(s)}</span>`).join('');
   p.marker.bindPopup(
     `<div class="pop-dag">${dagtext}</div>`+
     `<div class="pop-namn">${namn}</div>`+
-    `<div class="pop-region">${d[0].region}</div>`, {closeButton:true});
+    `<div class="pop-region">${d[0].region}</div>`+
+    `<div>${etapprader}</div>`, {closeButton:true});
 });
 
 /* badstopp längs rutten (rutt-waypoints med .badstopp) som egna små markörer */
@@ -353,7 +365,7 @@ stopp.forEach((s,i)=>{
   if(s.transfer) seglChip=`<span class="chip ingen">🚢 Hemresa · färja + flyg</span>`;
   else if(!s.seglas && s.dag===1) seglChip=`<span class="chip ingen">🛬 Ankomstdag</span>`;
   else if(!s.seglas) seglChip=`<span class="chip ingen">🛵 Ingen segling</span>`;
-  else seglChip=`<span class="chip segl">⛵️ ~${Math.round(nm)} M · ~${nummer1(nm/TRIP.fart)} h</span>`;
+  else seglChip=`<span class="chip segl">⛵️ ~${Math.round(nm)} M · ~${segTimmar(nm)} h</span>`;
 
   const natt = NATT[s.typ] || NATT.svaj;
   let nattTxt = natt.txt;

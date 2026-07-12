@@ -13,7 +13,7 @@ const TRIP = {
   fart: 5, // knop, för ungefärlig seglingstid
 
   // Bara för skoj — fyll i/ändra crewet
-  crew: ["Rasmus", "Wilhelm", "Signe", "+ resten av gänget"],
+  crew: ["Rasmus", "Vilhelm", "Signe", "+ resten av gänget"],
 
   stopp: [
     {
@@ -34,7 +34,7 @@ const TRIP = {
         mat: ["Middag i Diocletianus gamla stan", "En första öl på Riva-promenaden"],
         se: ["Diocletianus-palatset", "Marjan-backen om benen vill sträckas"]
       },
-      praktiskt: "Storhandla proviant inför veckan (mataffär nära Riva/marinan). Två i crewet, Wilhelm & Signe, ansluter imorgon kl 13:00."
+      praktiskt: "Storhandla proviant inför veckan (mataffär nära Riva/marinan). Två i crewet, Vilhelm & Signe, ansluter imorgon kl 13:00."
     },
     {
       dag: 2,
@@ -52,10 +52,10 @@ const TRIP = {
         vindskydd: "Mycket skyddad hamn"
       },
       sevart: {
-        mat: ["Konoba & Pizzeria Slika (vid marinan, kända solnedgångar)", "Gajeta Konoba (dalmatiskt vid vattnet)", "Restaurant Bago (fisk, utsikt en bit från centrum)"],
+        mat: ["VM-finalen på kvällen ⚽ — vi kollar upp en bar i Milna", "Konoba & Pizzeria Slika (vid marinan, kända solnedgångar)", "Gajeta Konoba (dalmatiskt vid vattnet)", "Restaurant Bago (fisk, utsikt en bit från centrum)"],
         se: ["Slottet i Milnas gamla del", "Kvällspromenad längs den skyddade viken"]
       },
-      praktiskt: "Wilhelm & Signe landar 13:00, ombord ~14:30/15:00 → loss mot Milna. Tanka/fyll vatten vid marinan inför svaj-dagarna."
+      praktiskt: "Vilhelm & Signe landar 13:00, ombord ~14:30/15:00 → loss mot Milna. Tanka/fyll vatten vid marinan inför svaj-dagarna."
     },
     {
       dag: 3,
